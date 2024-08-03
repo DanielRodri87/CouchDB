@@ -1,9 +1,9 @@
--- Cria o banco de dados se ainda não existir
-CREATE DATABASE IF NOT EXISTS meu_banco_de_dados;
-
--- Seleciona o banco de dados
+-- Create and use the database
+DROP DATABASE IF EXISTS meu_banco_de_dados;
+CREATE DATABASE meu_banco_de_dados;
 USE meu_banco_de_dados;
 
+-- Create tables
 CREATE TABLE EQUIPE_APOIO_ADM (
     IdEquipe INT PRIMARY KEY,
     Apoio VARCHAR(255)
@@ -32,6 +32,30 @@ CREATE TABLE CLIENTE (
     FOREIGN KEY (Id_trabalhador) REFERENCES TRABALHADOR(Id_trabalhador)
 );
 
+CREATE TABLE ORGREGULADOR (
+    IdOrgReg INT PRIMARY KEY,
+    Nome VARCHAR(255),
+    TipoRegulamento VARCHAR(255)
+);
+
+CREATE TABLE PROCESSO (
+    IdProc INT PRIMARY KEY,
+    Descricao VARCHAR(255),
+    IdOrgReg INT,
+    IdCliente INT,
+    FOREIGN KEY (IdOrgReg) REFERENCES ORGREGULADOR(IdOrgReg),
+    FOREIGN KEY (IdCliente) REFERENCES CLIENTE(IdCliente)
+);
+
+CREATE TABLE AUDIENCIA (
+    IdAudi INT PRIMARY KEY,
+    Data DATE,
+    IdOrgReg INT,
+    IdCliente INT,
+    FOREIGN KEY (IdOrgReg) REFERENCES ORGREGULADOR(IdOrgReg),
+    FOREIGN KEY (IdCliente) REFERENCES CLIENTE(IdCliente)
+);
+
 CREATE TABLE COMITE_DE_ETICA (
     IdDepar INT,
     Denuncia VARCHAR(255),
@@ -41,19 +65,17 @@ CREATE TABLE COMITE_DE_ETICA (
 CREATE TABLE ADV_PROCESSO (
     Id_trabalhador INT,
     IdProc INT,
-    PRIMARY KEY (Id_trabalhador, IdProc)
+    PRIMARY KEY (Id_trabalhador, IdProc),
+    FOREIGN KEY (Id_trabalhador) REFERENCES TRABALHADOR(Id_trabalhador),
+    FOREIGN KEY (IdProc) REFERENCES PROCESSO(IdProc)
 );
 
 CREATE TABLE ADV_AUDIENCIA (
     Id_trabalhador INT,
     IdAudi INT,
-    PRIMARY KEY (Id_trabalhador, IdAudi)
-);
-
-CREATE TABLE ADV_CASO (
-    Id_trabalhador INT,
-    IdCaso INT,
-    PRIMARY KEY (Id_trabalhador, IdCaso)
+    PRIMARY KEY (Id_trabalhador, IdAudi),
+    FOREIGN KEY (Id_trabalhador) REFERENCES TRABALHADOR(Id_trabalhador),
+    FOREIGN KEY (IdAudi) REFERENCES AUDIENCIA(IdAudi)
 );
 
 CREATE TABLE INCIDENTE_TI (
@@ -81,14 +103,6 @@ CREATE TABLE TI (
     IdDepar INT,
     Infraestrutura VARCHAR(255),
     FOREIGN KEY (IdDepar) REFERENCES DEPARTAMENTO(IdDepar)
-);
-
-CREATE TABLE PROCESSO (
-    IdProc INT PRIMARY KEY,
-    Descricao VARCHAR(255),
-    IdOrgReg INT,
-    IdCliente INT,
-    FOREIGN KEY (IdCliente) REFERENCES CLIENTE(IdCliente)
 );
 
 CREATE TABLE ADVOCACIA (
@@ -123,15 +137,10 @@ CREATE TABLE BIBLIOTECA_JURI (
     FOREIGN KEY (Id_trabalhador) REFERENCES TRABALHADOR(Id_trabalhador)
 );
 
-CREATE TABLE ORGREGULADOR (
-    IdOrgReg INT PRIMARY KEY,
-    Nome VARCHAR(255),
-    TipoRegulamento VARCHAR(255)
-);
-
 CREATE TABLE STAKEHOLDERS (
     Id_trabalhador INT,
-    Qtd_investimento DECIMAL(10, 2)
+    Qtd_investimento DECIMAL(10, 2),
+    FOREIGN KEY (Id_trabalhador) REFERENCES TRABALHADOR(Id_trabalhador)
 );
 
 CREATE TABLE SETOR_BIB (
@@ -145,32 +154,35 @@ CREATE TABLE CASO (
     Descricao VARCHAR(255),
     IdOrgReg INT,
     IdCliente INT,
+    FOREIGN KEY (IdOrgReg) REFERENCES ORGREGULADOR(IdOrgReg),
     FOREIGN KEY (IdCliente) REFERENCES CLIENTE(IdCliente)
 );
 
 CREATE TABLE SOCIO (
     Id_trabalhador INT,
-    Participacao DECIMAL(10, 2)
+    Participacao DECIMAL(10, 2),
+    FOREIGN KEY (Id_trabalhador) REFERENCES TRABALHADOR(Id_trabalhador)
 );
 
 CREATE TABLE ADVOGADO (
-    Id_trabalhador INT
+    Id_trabalhador INT,
+    FOREIGN KEY (Id_trabalhador) REFERENCES TRABALHADOR(Id_trabalhador)
 );
 
 CREATE TABLE CHEFE (
-    Id_trabalhador INT
+    Id_trabalhador INT,
+    FOREIGN KEY (Id_trabalhador) REFERENCES TRABALHADOR(Id_trabalhador)
 );
 
-CREATE TABLE AUDIENCIA (
-    IdAudi INT PRIMARY KEY,
-    Data DATE,
-    IdOrgReg INT,
-    IdCliente INT,
-    FOREIGN KEY (IdCliente) REFERENCES CLIENTE(IdCliente)
+CREATE TABLE ADV_CASO (
+    Id_trabalhador INT,
+    IdCaso INT,
+    PRIMARY KEY (Id_trabalhador, IdCaso),
+    FOREIGN KEY (Id_trabalhador) REFERENCES TRABALHADOR(Id_trabalhador),
+    FOREIGN KEY (IdCaso) REFERENCES CASO(IdCaso)
 );
 
-
--- POVOANDO DADOS
+-- Populate data
 INSERT INTO EQUIPE_APOIO_ADM (IdEquipe, Apoio) VALUES
 (1, 'Suporte Técnico'),
 (2, 'Administrativo');
@@ -198,21 +210,6 @@ INSERT INTO COMITE_DE_ETICA (IdDepar, Denuncia) VALUES
 (2, 'A Rica de Cássia me chamou de pobre'),
 (1, 'O Daniel chamou o Francivaldo Barósio de elemento químico e tóxico');
 
-INSERT INTO ADV_PROCESSO (Id_trabalhador, IdProc) VALUES
-(1, 2),
-(2, 1),
-(3, 3);
-
-INSERT INTO ADV_AUDIENCIA (Id_trabalhador, IdAudi) VALUES
-(1, 2),
-(2, 1),
-(3, 3);
-
-INSERT INTO ADV_CASO (Id_trabalhador, IdCaso) VALUES
-(1, 2),
-(2, 1),
-(3, 3);
-
 INSERT INTO INCIDENTE_TI (IdDepar, Incidente) VALUES
 (1, 'Falha no servidor'),
 (2, 'O servidor caiu NO CHÃO'),
@@ -227,10 +224,6 @@ INSERT INTO RH (IdDepar, AvaliacaoDesempenho, DataAdmissao, Contrato) VALUES
 
 INSERT INTO TI (IdDepar, Infraestrutura) VALUES
 (1, 'Rede de computadores');
-
-INSERT INTO PROCESSO (IdProc, Descricao, IdOrgReg, IdCliente) VALUES
-(1, 'Processo trabalhista', 1, 1),
-(2, 'Processo civil', 2, 2);
 
 INSERT INTO ADVOCACIA (IdDepar, Qnt_advogados) VALUES
 (2, 10);
@@ -254,10 +247,10 @@ INSERT INTO ORGREGULADOR (IdOrgReg, Nome, TipoRegulamento) VALUES
 (2, 'Orgão Regulador B', 'Regulamento B');
 
 INSERT INTO STAKEHOLDERS (Id_trabalhador, Qtd_investimento) VALUES
-(1, 100000.00),
-(2, 10000.00),
+(1, 10000.00),
+(2, 1000.00),
 (3, 500.00),
-(4, 100000000.00),
+(4, 10000.00),
 (5, 50.00);
 
 INSERT INTO SETOR_BIB (IdBib, Setor) VALUES
@@ -283,3 +276,24 @@ INSERT INTO CHEFE (Id_trabalhador) VALUES
 INSERT INTO AUDIENCIA (IdAudi, Data, IdOrgReg, IdCliente) VALUES
 (1, '2023-03-15', 1, 1),
 (2, '2023-04-20', 2, 2);
+
+INSERT INTO PROCESSO (IdProc, Descricao, IdOrgReg, IdCliente) VALUES
+(1, 'Processo trabalhista', 1, 1),
+(2, 'Processo civil', 2, 2),
+(3, 'Processo penal', 2, 3);
+
+INSERT INTO ADV_PROCESSO (Id_trabalhador, IdProc) VALUES
+(1, 2),
+(2, 1),
+(3, 3);
+
+
+INSERT INTO ADV_CASO (Id_trabalhador, IdCaso) VALUES
+(1, 2),
+(2, 1);
+
+INSERT INTO ADV_AUDIENCIA (Id_trabalhador, IdAudi) VALUES
+(1, 2),
+(2, 1);
+
+-- Consultas
