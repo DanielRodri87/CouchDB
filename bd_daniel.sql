@@ -237,7 +237,10 @@ INSERT INTO DESPESA_FIN (IdDepar, Despesa) VALUES
 (2, 999999.00);
 
 INSERT INTO CONSUTOR_EXTERNO (IdConsul, Nome, Especializacao, Email) VALUES
-(1, 'Berenice', 'Contabilidade', 'bere2020@hotmail.com');
+(1, 'Berenice', 'Contabilidade', 'bere2020@hotmail.com'),
+(2, 'Coronado', 'Engenharia de Software', 'coronado2024@gmail.com'),
+(3, 'Pablo Marçal', 'Vendas', 'vendomesmo@gmail.com');
+
 
 INSERT INTO BIBLIOTECA_JURI (IdBib, QtdLivro, Id_trabalhador) VALUES
 (1, 1000, 1);
@@ -297,43 +300,466 @@ INSERT INTO ADV_AUDIENCIA (Id_trabalhador, IdAudi) VALUES
 (2, 1);
 
 -- Consultas
--- 1. Listando todos os advogados e seus respectivos clientes
+-- 2.1.1. Lista de advogados, seus departamentos e os clientes que contrataram esses advogados
 SELECT 
-    A.Nome AS Advogado,
-    C.Nome AS Cliente
+    t.Nome AS Advogado,
+    d.IdDepar AS Departamento,
+    c.Nome AS Cliente
 FROM 
-    ADVOGADO AD
-    JOIN TRABALHADOR A ON AD.Id_trabalhador = A.Id_trabalhador
-    JOIN CLIENTE C ON A.Id_trabalhador = C.Id_trabalhador
-ORDER BY
-    A.Nome, C.Nome;
+    ADVOGADO a
+JOIN 
+    TRABALHADOR t ON a.Id_trabalhador = t.Id_trabalhador
+JOIN 
+    CLIENTE c ON t.Id_trabalhador = c.Id_trabalhador
+JOIN 
+    DEPARTAMENTO d ON d.IdDepar = (SELECT IdDepar FROM DEPARTAMENTO WHERE IdDepar = d.IdDepar);
+
+-- 2.1.2. Lista de departamentos e os advogados que trabalham em processos analisados por um órgão regulador específico.
+SELECT
+    d.IdDepar AS Departamento,
+    t.Nome AS Advogado,
+    o.Nome AS OrgaoRegulador,
+    p.Descricao AS Processo
+FROM
+    ADV_PROCESSO ap
+JOIN
+    TRABALHADOR t ON ap.Id_trabalhador = t.Id_trabalhador
+JOIN
+    PROCESSO p ON ap.IdProc = p.IdProc
+JOIN
+    ORGREGULADOR o ON p.IdOrgReg = o.IdOrgReg
+JOIN
+    CLIENTE c ON p.IdCliente = c.IdCliente
+JOIN
+    DEPARTAMENTO d ON c.Id_trabalhador = t.Id_trabalhador
+WHERE
+    o.IdOrgReg = 2; 
+
+-- 2.1.3. Listagem de trabalhadores e suas respectivas equipes de apoio administrativo e bibliotecas jurídicas
+SELECT
+    t.Nome AS Trabalhador,
+    ea.Apoio AS EquipeApoioAdm,
+    bj.QtdLivro AS QtdLivrosBiblioteca
+FROM
+    TRABALHADOR t
+LEFT JOIN
+    DEPARTAMENTO d ON t.Id_trabalhador = d.IdDepar
+LEFT JOIN
+    EQUIPE_APOIO_ADM ea ON d.IdEquipe = ea.IdEquipe
+LEFT JOIN
+    BIBLIOTECA_JURI bj ON t.Id_trabalhador = bj.Id_trabalhador;
+
+-- 2.1.4. Listar os consultores externos e seus departamentos auxiliados
+SELECT
+    ce.Nome AS ConsultorExterno,
+    d.IdDepar AS Departamento
+FROM
+    CONSUTOR_EXTERNO ce
+JOIN
+    TRABALHADOR t ON ce.IdConsul = t.IdConsul
+JOIN
+    DEPARTAMENTO d ON t.IdConsul = ce.IdConsul
+GROUP BY
+    ce.Nome, d.IdDepar;
     
--- -- 2. Lista de advogados, seus departamentos e os clientes que contrataram esses advogados
-SELECT 
-    A.Nome AS Advogado,
-    D.IdDepar AS Departamento,
-    C.Nome AS Cliente
+-- 2.1.5. Combinar informações de clientes, processos e organizações reguladoras em um conjunto de dados  
+-- único, selecionando e extraindo apenas os atributos relevantes para uma análise posterior
+SELECT
+    c.Nome AS Cliente,
+    c.Cpf AS CPF,
+    c.Contrato AS Contrato,
+    p.Descricao AS DescricaoProcesso,
+    o.Nome AS OrgaoRegulador,
+    o.TipoRegulamento AS TipoRegulamento
 FROM
-    ADVOGADO AD
-    JOIN TRABALHADOR A ON AD.Id_trabalhador = A.Id_trabalhador
-    JOIN CLIENTE C ON A.Id_trabalhador = C.Id_trabalhador
-    JOIN DEPARTAMENTO D ON A.IdConsul = D.IdDepar
-ORDER BY
-    A.Nome, D.IdDepar, C.Nome;
+    CLIENTE c
+JOIN
+    PROCESSO p ON c.IdCliente = p.IdCliente
+JOIN
+    ORGREGULADOR o ON p.IdOrgReg = o.IdOrgReg;
 
-
-
-
--- 2. Lista de advogados, seus departamentos e os clientes que contrataram esses advogados
-SELECT 
-    A.Nome AS Advogado,
-    D.IdDepar AS Departamento,
-    C.Nome AS Cliente
+-- 2.2.1. Listar todos os registros de RH e contratos, mostrando todas as pessoas que possuem qualquer uma dessas relações.
+SELECT
+    t.Nome AS Trabalhador,
+    rh.AvaliacaoDesempenho AS AvaliacaoDesempenho,
+    rh.DataAdmissao AS DataAdmissaoRH,
+    rh.Contrato AS ContratoRH,
+    c.DataAdmissao AS DataAdmissaoContrato,
+    c.Contrato AS Contrato
 FROM
-    ADVOGADO AD
-    JOIN TRABALHADOR A ON AD.Id_trabalhador = A.Id_trabalhador
-    JOIN CLIENTE C ON A.Id_trabalhador = C.Id_trabalhador
-    JOIN DEPARTAMENTO D ON A.IdConsul = D.IdDepar
-ORDER BY
-    A.Nome, D.IdDepar, C.Nome;
+    TRABALHADOR t
+LEFT JOIN
+    DEPARTAMENTO d ON t.Id_trabalhador = d.IdDepar
+LEFT JOIN
+    RH rh ON d.IdDepar = rh.IdDepar
+LEFT JOIN
+    CONTRATO c ON d.IdDepar = c.IdDepar
+WHERE
+    rh.IdDepar IS NOT NULL OR c.IdDepar IS NOT NULL;
 
+-- 2.2.2. Obter todos os processos e audiências
+SELECT
+    t.Nome AS Trabalhador,
+    'Processo' AS Tipo,
+    p.Descricao AS Descricao
+FROM
+    ADV_PROCESSO ap
+JOIN
+    TRABALHADOR t ON ap.Id_trabalhador = t.Id_trabalhador
+JOIN
+    PROCESSO p ON ap.IdProc = p.IdProc
+
+UNION
+
+SELECT
+    t.Nome AS Trabalhador,
+    'Audiência' AS Tipo,
+    CONCAT('Audiência em ', a.Data) AS Descricao
+FROM
+    ADV_AUDIENCIA aa
+JOIN
+    TRABALHADOR t ON aa.Id_trabalhador = t.Id_trabalhador
+JOIN
+    AUDIENCIA a ON aa.IdAudi = a.IdAudi;
+
+-- 2.2.3 Encontrar trabalhadores que estejam em ambos os departamento de RH e TI. | RESULTADO ESTRANHO |
+SELECT
+    t.Id_trabalhador,
+    t.Nome
+FROM
+    TRABALHADOR t
+JOIN
+    DEPARTAMENTO d ON t.Id_trabalhador = d.NumTrab -- Associar trabalhadores aos departamentos
+JOIN
+    RH r ON d.IdDepar = r.IdDepar
+JOIN
+    TI i ON d.IdDepar = i.IdDepar
+GROUP BY
+    t.Id_trabalhador, t.Nome
+HAVING
+    COUNT(DISTINCT r.IdDepar) > 0
+    AND COUNT(DISTINCT i.IdDepar) > 0;
+
+
+-- 2.2.4 Encontrar advogados que estão ao mesmo tempo em um caso e em um processo
+SELECT
+    t.Id_trabalhador AS IdAdvogado,
+    t.Nome AS NomeAdvogado
+FROM
+    ADV_CASO ac
+JOIN
+    ADV_PROCESSO ap ON ac.Id_trabalhador = ap.Id_trabalhador
+JOIN
+    TRABALHADOR t ON ac.Id_trabalhador = t.Id_trabalhador;
+
+-- 2.3.1 Listar todos os nomes dos clientes com caso
+SELECT DISTINCT
+    c.Nome AS NomeCliente
+FROM
+    CLIENTE c
+JOIN
+    CASO ca ON c.IdCliente = ca.IdCliente;
+
+-- 2.3.2. Listar os nome de todos os clientes com processos
+SELECT DISTINCT
+    c.Nome AS NomeCliente
+FROM
+    CLIENTE c
+JOIN
+    PROCESSO p ON c.IdCliente = p.IdCliente;
+
+-- 2.3.4 Exibindo a descrição do processo e a data da audiência
+SELECT
+    p.Descricao AS DescricaoProcesso,
+    a.Data AS DataAudiencia
+FROM
+    PROCESSO p
+JOIN
+    AUDIENCIA a ON p.IdCliente = a.IdCliente AND p.IdOrgReg = a.IdOrgReg;
+
+-- 2.3.5 Realizando a junção total entre Trabalhador e advogado
+SELECT
+    t.Id_trabalhador,
+    t.Nome,
+    'Trabalhador' AS Tipo
+FROM
+    TRABALHADOR t
+LEFT JOIN
+    ADVOGADO a ON t.Id_trabalhador = a.Id_trabalhador
+WHERE
+    a.Id_trabalhador IS NULL
+
+UNION
+
+SELECT
+    a.Id_trabalhador,
+    t.Nome,
+    'Advogado' AS Tipo
+FROM
+    ADVOGADO a
+LEFT JOIN
+    TRABALHADOR t ON t.Id_trabalhador = a.Id_trabalhador
+
+UNION
+
+SELECT
+    t.Id_trabalhador,
+    t.Nome,
+    'Trabalhador e Advogado' AS Tipo
+FROM
+    TRABALHADOR t
+JOIN
+    ADVOGADO a ON t.Id_trabalhador = a.Id_trabalhador;
+
+-- 2.3.6 Junção externa total de PROCESSO E AUDIENCIA
+SELECT
+    p.IdProc,
+    p.Descricao AS DescricaoProcesso,
+    a.IdAudi AS IdAudiencia,
+    a.Data AS DataAudiencia,
+    'Processo' AS Tipo
+FROM
+    PROCESSO p
+LEFT JOIN
+    AUDIENCIA a ON p.IdCliente = a.IdCliente AND p.IdOrgReg = a.IdOrgReg
+WHERE
+    a.IdAudi IS NULL
+
+UNION
+
+SELECT
+    p.IdProc,
+    p.Descricao AS DescricaoProcesso,
+    a.IdAudi AS IdAudiencia,
+    a.Data AS DataAudiencia,
+    'Audiencia' AS Tipo
+FROM
+    AUDIENCIA a
+LEFT JOIN
+    PROCESSO p ON p.IdCliente = a.IdCliente AND p.IdOrgReg = a.IdOrgReg
+WHERE
+    p.IdProc IS NULL
+
+UNION
+
+SELECT
+    p.IdProc,
+    p.Descricao AS DescricaoProcesso,
+    a.IdAudi AS IdAudiencia,
+    a.Data AS DataAudiencia,
+    'Processo e Audiência' AS Tipo
+FROM
+    PROCESSO p
+JOIN
+    AUDIENCIA a ON p.IdCliente = a.IdCliente AND p.IdOrgReg = a.IdOrgReg;
+    
+-- 2.3.7 Exibindo todos os dados de contrato e RH
+SELECT
+    c.IdDepar AS Departamento,
+    c.DataAdmissao AS DataAdmissaoContrato,
+    c.Contrato AS ContratoDescricao,
+    r.AvaliacaoDesempenho AS AvaliacaoDesempenhoRH,
+    r.DataAdmissao AS DataAdmissaoRH,
+    r.Contrato AS ContratoDescricaoRH,
+    'Contrato' AS Tipo
+FROM
+    CONTRATO c
+LEFT JOIN
+    RH r ON c.IdDepar = r.IdDepar
+WHERE
+    r.IdDepar IS NULL
+
+UNION
+
+SELECT
+    c.IdDepar AS Departamento,
+    c.DataAdmissao AS DataAdmissaoContrato,
+    c.Contrato AS ContratoDescricao,
+    r.AvaliacaoDesempenho AS AvaliacaoDesempenhoRH,
+    r.DataAdmissao AS DataAdmissaoRH,
+    r.Contrato AS ContratoDescricaoRH,
+    'RH' AS Tipo
+FROM
+    RH r
+LEFT JOIN
+    CONTRATO c ON r.IdDepar = c.IdDepar
+WHERE
+    c.IdDepar IS NULL
+
+UNION
+
+SELECT
+    c.IdDepar AS Departamento,
+    c.DataAdmissao AS DataAdmissaoContrato,
+    c.Contrato AS ContratoDescricao,
+    r.AvaliacaoDesempenho AS AvaliacaoDesempenhoRH,
+    r.DataAdmissao AS DataAdmissaoRH,
+    r.Contrato AS ContratoDescricaoRH,
+    'Contrato e RH' AS Tipo
+FROM
+    CONTRATO c
+JOIN
+    RH r ON c.IdDepar = r.IdDepar;
+
+-- 2.3.8. Exibindo todos os dados entre o financeiro e as despesas
+SELECT
+    f.IdDepar AS Departamento,
+    f.Receita AS ReceitaFinanceira,
+    d.Despesa AS DespesaFinanceira,
+    'Financeiro' AS Tipo
+FROM
+    FINANCEIRO f
+LEFT JOIN
+    DESPESA_FIN d ON f.IdDepar = d.IdDepar
+WHERE
+    d.IdDepar IS NULL
+
+UNION
+
+SELECT
+    f.IdDepar AS Departamento,
+    f.Receita AS ReceitaFinanceira,
+    d.Despesa AS DespesaFinanceira,
+    'Despesa' AS Tipo
+FROM
+    DESPESA_FIN d
+LEFT JOIN
+    FINANCEIRO f ON d.IdDepar = f.IdDepar
+WHERE
+    f.IdDepar IS NULL
+
+UNION
+
+SELECT
+    f.IdDepar AS Departamento,
+    f.Receita AS ReceitaFinanceira,
+    d.Despesa AS DespesaFinanceira,
+    'Financeiro e Despesa' AS Tipo
+FROM
+    FINANCEIRO f
+JOIN
+    DESPESA_FIN d ON f.IdDepar = d.IdDepar;
+    
+    
+-- ###################################################### 	RITA	 ###################################    
+-- 2.4.1 Nosso objetivo é listar os trabalhadores que participaram de todas as audiências disponíveis na advocacia 		|ESTRANHO! Mas justificável, falta povoar|
+SELECT
+    t.Id_trabalhador,
+    t.Nome
+FROM
+    TRABALHADOR t
+JOIN
+    ADV_AUDIENCIA aa ON t.Id_trabalhador = aa.Id_trabalhador
+GROUP BY
+    t.Id_trabalhador, t.Nome
+HAVING
+    COUNT(DISTINCT aa.IdAudi) = (
+        SELECT
+            COUNT(DISTINCT IdAudi)
+        FROM
+            AUDIENCIA
+    );
+    
+-- 2.4.2. Nosso objetivo é encontrar contratos associados a todos os Departamentos da advocacia
+WITH DepartamentosAdvocacia AS (
+    SELECT
+        d.IdDepar
+    FROM
+        DEPARTAMENTO d
+    JOIN
+        ADVOCACIA a ON d.IdDepar = a.IdDepar
+)
+
+SELECT
+    c.IdDepar AS DepartamentoID,
+    c.Contrato
+FROM
+    CONTRATO c
+JOIN
+    DepartamentosAdvocacia da ON c.IdDepar = da.IdDepar
+ORDER BY
+    c.IdDepar;
+
+-- 2.5.4. Contar o numero de trabalhadores.
+SELECT
+    COUNT(*) AS NumeroTrabalhadores
+FROM
+    TRABALHADOR;
+
+-- 2.5.5. Contar o número de trabalhadores associados a stakeholders
+SELECT
+    COUNT(DISTINCT t.Id_trabalhador) AS NumeroTrabalhadores
+FROM
+    TRABALHADOR t
+JOIN
+    STAKEHOLDERS s ON t.Id_trabalhador = s.Id_trabalhador;
+
+
+-- 2.5.6. Contar o numero de trabalhadores associados a advogados    
+SELECT
+    COUNT(DISTINCT t.Id_trabalhador) AS NumeroTrabalhadores
+FROM
+    TRABALHADOR t
+JOIN
+    ADVOGADO a ON t.Id_trabalhador = a.Id_trabalhador;
+
+-- 2.5.7. Contar o número de contratos por departamento
+SELECT
+    d.IdDepar AS Departamento,
+    COUNT(c.Contrato) AS NumeroDeContratos
+FROM
+    DEPARTAMENTO d
+LEFT JOIN
+    CONTRATO c ON d.IdDepar = c.IdDepar
+GROUP BY
+    d.IdDepar
+ORDER BY
+    d.IdDepar;
+    
+-- 2.5.8. Contar o número de departamento
+SELECT
+    COUNT(*) AS NumeroDeDepartamentos
+FROM
+    DEPARTAMENTO;
+    
+-- 2.5.9. Contar os trabalhadores com o maior número de livros em suas bibliotecas
+WITH MaxLivros AS (
+    SELECT
+        MAX(b.QtdLivro) AS MaxLivros
+    FROM
+        BIBLIOTECA_JURI b
+)
+
+SELECT
+    COUNT(*) AS NumeroDeTrabalhadores
+FROM
+    BIBLIOTECA_JURI b
+JOIN
+    MaxLivros m ON b.QtdLivro = m.MaxLivros
+JOIN
+    TRABALHADOR t ON b.Id_trabalhador = t.Id_trabalhador;
+
+
+-- 2.5.10. Contar os órgãos reguladores com o maior número de audiências analisadas
+WITH MaxAudiencias AS (
+    SELECT
+        IdOrgReg,
+        COUNT(IdAudi) AS NumeroDeAudiencias
+    FROM
+        AUDIENCIA
+    GROUP BY
+        IdOrgReg
+),
+MaxAudienciaCount AS (
+    SELECT
+        MAX(NumeroDeAudiencias) AS MaxAudiencias
+    FROM
+        MaxAudiencias
+)
+
+SELECT
+    COUNT(*) AS NumeroDeOrgaosReguladores
+FROM
+    MaxAudiencias ma
+JOIN
+    MaxAudienciaCount mac ON ma.NumeroDeAudiencias = mac.MaxAudiencias;
