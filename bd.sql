@@ -452,6 +452,18 @@ JOIN
 JOIN
     TRABALHADOR t ON ac.Id_trabalhador = t.Id_trabalhador;
 
+-- 2.2.5 Listar todos os contratos que não possuem incidentes em TI. |FALTA POVOAR MAIS|
+SELECT
+    c.IdDepar,
+    c.Contrato
+FROM
+    CONTRATO c
+LEFT JOIN
+    INCIDENTE_TI it ON c.IdDepar = it.IdDepar
+WHERE
+    it.IdDepar IS NULL;
+
+
 -- 2.3.1 Listar todos os nomes dos clientes com caso
 SELECT DISTINCT
     c.Nome AS NomeCliente
@@ -467,6 +479,16 @@ FROM
     CLIENTE c
 JOIN
     PROCESSO p ON c.IdCliente = p.IdCliente;
+
+-- 2.3.3. Exibir o nome do trabalhador e do cliente
+SELECT
+    t.Nome AS NomeTrabalhador,
+    c.Nome AS NomeCliente
+FROM
+    TRABALHADOR t
+JOIN
+    CLIENTE c ON t.Id_trabalhador = c.Id_trabalhador;
+
 
 -- 2.3.4 Exibindo a descrição do processo e a data da audiência
 SELECT
@@ -639,9 +661,106 @@ FROM
     FINANCEIRO f
 JOIN
     DESPESA_FIN d ON f.IdDepar = d.IdDepar;
+
+-- 2.3.9 Consulta 2: Lista de todos os departamentos e advogados associados, incluindo departamentos que não têm advogados
+SELECT d.IdDepar, d.NumTrab, t.Id_trabalhador, t.Nome
+FROM DEPARTAMENTO d
+LEFT JOIN TRABALHADOR t ON d.IdDepar = t.IdConsul
+LEFT JOIN ADVOGADO a ON t.Id_trabalhador = a.Id_trabalhador;
+
+
+-- 2.3.10 Consulta de todos os processos e advogados associados, incluindo processos que não têm advogados associados
+SELECT 
+    PROCESSO.IdProc, 
+    PROCESSO.Descricao AS ProcessoDescricao, 
+    ADVOGADO.Id_trabalhador AS AdvogadoId, 
+    TRABALHADOR.Nome AS AdvogadoNome
+FROM 
+    PROCESSO
+LEFT JOIN 
+    ADV_PROCESSO ON PROCESSO.IdProc = ADV_PROCESSO.IdProc
+LEFT JOIN 
+    TRABALHADOR ON ADV_PROCESSO.Id_trabalhador = TRABALHADOR.Id_trabalhador
+LEFT JOIN 
+    ADVOGADO ON TRABALHADOR.Id_trabalhador = ADVOGADO.Id_trabalhador;
+
+-- 2.3.11 Queremos listar todos os incidentes de TI e os departamentos associados, incluindo os incidentes de TI que n ̃ao tˆem departamentos associados.
+SELECT 
+    i.IdDepar, 
+    i.Incidente, 
+    d.NumTrab
+FROM 
+    INCIDENTE_TI i
+LEFT JOIN 
+    DEPARTAMENTO d 
+ON 
+    i.IdDepar = d.IdDepar;
+
+-- 2.3.12 Queremos listar todas as audiˆencias e os advogados associados, incluindo as audiˆencias que n ̃ao tˆem advogados associados.
+SELECT 
+    a.IdAudi, 
+    a.Data, 
+    aa.Id_trabalhador
+FROM 
+    AUDIENCIA a
+LEFT JOIN 
+    ADV_AUDIENCIA aa 
+ON 
+    a.IdAudi = aa.IdAudi;
+
+-- 2.3.13 Listar todos os registros de TRABALHADOR e ADVOGADO, mostrando todas as pessoas que possuem qualquer uma dessas relac ̧  ̃oes, incluindo trabalhadores sem registros de advogado
+SELECT 
+    T.Id_trabalhador,
+    T.Nome,
+    T.Email,
+    T.IdConsul,
+    A.Id_trabalhador AS Advogado
+FROM 
+    TRABALHADOR T
+LEFT JOIN 
+    ADVOGADO A
+ON 
+    T.Id_trabalhador = A.Id_trabalhador;
+
+-- 2.3.14 Listar todos os registros de DEPARTAMENTO e TI, mostrando todos os nomes de departamentos, incluindo aqueles que n ̃ao possuem registros na TI
+SELECT
+    d.IdDepar AS DepartamentoID,
+    d.NumTrab AS NumeroTrabalhadores,
+    d.IdEquipe AS EquipeID,
+    COALESCE(t.Infraestrutura, 'Nenhum registro TI') AS InfraestruturaTI
+FROM
+    DEPARTAMENTO d
+LEFT JOIN
+    TI t ON d.IdDepar = t.IdDepar
+ORDER BY
+    d.IdDepar;
+
+-- 2.3.15: Listar todos os registros de CLIENTE e PROCESSO, mostrando todos os clientes, incluindo aqueles que n ̃ao possuem registros de processos
+
+SELECT 
+    CLIENTE.Nome,
+    CLIENTE.Cpf,
+    PROCESSO.IdProc
+FROM 
+    CLIENTE
+LEFT JOIN 
+    PROCESSO
+ON 
+    CLIENTE.IdCliente = PROCESSO.IdCliente;
+
+-- 2.3.16: Listar todos os registros de CONTRATO e RH, mostrando todos os contratos, incluindo aqueles que não possuem registros em RH
+SELECT 
+    CONTRATO.IdDepar,
+    CONTRATO.DataAdmissao,
+    RH.AvaliacaoDesempenho
+FROM 
+    CONTRATO
+LEFT JOIN 
+    RH
+ON 
+    CONTRATO.IdDepar = RH.IdDepar;
+
     
-    
--- ###################################################### 	RITA	 ###################################    
 -- 2.4.1 Nosso objetivo é listar os trabalhadores que participaram de todas as audiências disponíveis na advocacia 		|ESTRANHO! Mas justificável, falta povoar|
 SELECT
     t.Id_trabalhador,
@@ -680,6 +799,32 @@ JOIN
 ORDER BY
     c.IdDepar;
 
+-- 2.5.1: Contar o número de advogados em cada departamento:
+SELECT 
+    IdDepar,
+    SUM(Qnt_advogados) AS TotalAdvogados
+FROM 
+    ADVOCACIA
+GROUP BY 
+    IdDepar;
+
+-- 2.5.2: Somar as receitas por departamento
+SELECT 
+    IdDepar,
+    SUM(Receita) AS TotalReceita
+FROM 
+    FINANCEIRO
+GROUP BY 
+    IdDepar;
+
+-- 2.5.3: Contar o numero de trabalhadores por audiência
+SELECT 
+    IdAudi,
+    COUNT(Id_trabalhador) AS QuantidadeTrabalhadores
+FROM 
+    ADV_AUDIENCIA
+GROUP BY 
+    IdAudi;
 -- 2.5.4. Contar o numero de trabalhadores.
 SELECT
     COUNT(*) AS NumeroTrabalhadores
