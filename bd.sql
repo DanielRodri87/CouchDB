@@ -189,52 +189,92 @@ INSERT INTO EQUIPE_APOIO_ADM (IdEquipe, Apoio) VALUES
 
 INSERT INTO DEPARTAMENTO (IdDepar, NumTrab, IdEquipe) VALUES
 (1, 50, 1),
-(2, 30, 2);
+(2, 30, 2),
+(3, 25, 1),
+(4, 20, 2);
+
 
 INSERT INTO TRABALHADOR (Id_trabalhador, Nome, Email, IdConsul) VALUES
 (1, 'Daniel Rotrigesr', 'danielzimgamer@gmail.com', NULL),
 (2, 'Francinvaldo de Sousa Barósio', 'naldo.ff.oliveira@outlook.com', NULL),
 (3, 'Luis de Deus', 'mojangmedêminecraftdegraca@gmail.com', NULL),
 (4, 'Rica de Cássia', 'ricesta123@gmail.com', NULL),
-(5, 'Hiago Robério', 'chorao_junior_sou_seu_fa@gmail.com', 1); -- Ele é 1, porque tem vínculo a um consultor externo
+(5, 'Hiago Robério', 'chorao_junior_sou_seu_fa@gmail.com', 1), -- Ele é 1, porque tem vínculo a um consultor externo
+(6, 'Gabriela Souza', 'gabriela@gmail.com', 2),
+(7, 'Paulo Almeida', 'paulo@empresa.com', 3),
+(8, 'Fernanda Lima', 'fernanda@empresa.com', NULL),
+(9, 'Marcos Silva', 'marcos@empresa.com', NULL),
+(10, 'Julia Mendes', 'julia@empresa.com', NULL),
+(11, 'Carla Figueiredo', 'carla@empresa.com', NULL),
+(12, 'Ricardo Santos', 'ricardo@empresa.com', NULL),
+(21, 'Felipe Costa', 'felipe@empresa.com', NULL),
+(22, 'Mariana Alves', 'mariana@empresa.com', NULL),
+(23, 'Alfredo Junior', 'trabalhadorx@empresa.com', NULL);
+
 
 INSERT INTO CLIENTE (IdCliente, Nome, Cpf, Contrato, Id_trabalhador) VALUES
 (1, 'Salvando Sonegadores', '12345678901', 'Contrato123', 1),
 (2, 'Somos Justus', '98765432101', 'Contrato456', 2),
 (3, 'Empresa legal -literalmente-', '40028922', 'Contrato789', 3),
-(4, 'Desleais Juniors', '40048944', 'Contrato1011', 4);
+(4, 'Desleais Juniors', '40048944', 'Contrato1011', 4),
+(5, 'Empresa X', '11122233344', 'Contrato555', 5),
+(6, 'Empresa Y', '55566677788', 'Contrato666', 6),
+(7, 'Empresa Z', '99988877766', 'Contrato777', 7),
+(8, 'Empresa W', '44433322211', 'Contrato888', 8);
 
 INSERT INTO COMITE_DE_ETICA (IdDepar, Denuncia) VALUES
 (1, 'Denúncia de assédio moral'),
 (2, 'O Hiago comeu meu lanche'),
 (2, 'A Rica de Cássia me chamou de pobre'),
-(1, 'O Daniel chamou o Francivaldo Barósio de elemento químico e tóxico');
+(1, 'O Daniel chamou o Francivaldo Barósio de elemento químico e tóxico'),
+(1, 'Denúncia de corrupção'),
+(2, 'Denúncia de discriminação');
 
 INSERT INTO INCIDENTE_TI (IdDepar, Incidente) VALUES
 (1, 'Falha no servidor'),
 (2, 'O servidor caiu NO CHÃO'),
-(2, 'As pilhas do controle do ar-condicionado descarregaram');
+(2, 'As pilhas do controle do ar-condicionado descarregaram'),
+(1, 'Falha de segurança'),
+(2, 'Problema de conectividade');
+
 
 INSERT INTO CONTRATO (IdDepar, DataAdmissao, Contrato) VALUES
-(1, '2024-01-21', 'Contrato001'),
-(2, '2024-05-12', 'Contrato002');
+(1, '2024-11-01', 'Contrato015'),
+(1, '2024-12-01', 'Contrato016'),
+(2, '2024-11-01', 'Contrato017'),
+(2, '2024-12-01', 'Contrato018'),
+(3, '2024-11-01', 'Contrato019'),
+(3, '2024-12-01', 'Contrato020'),
+(3, '2024-09-01', 'Contrato021'),
+(4, '2024-10-01', 'Contrato022');
 
 INSERT INTO RH (IdDepar, AvaliacaoDesempenho, DataAdmissao, Contrato) VALUES
-(2, 'Excelente', '2023-02-20', 'Contrato654');
+(2, 'Excelente', '2023-02-20', 'Contrato654'),
+(1, 'Bom', '2023-03-01', 'Contrato888'),
+(3, 'Muito Bom', '2023-09-01', 'Contrato021'),
+(4, 'Excelente', '2023-10-01', 'Contrato022');
+
 
 INSERT INTO TI (IdDepar, Infraestrutura) VALUES
-(1, 'Rede de computadores');
+(1, 'Rede de computadores'),
+(2, 'Servidores de alta capacidade');
+
 
 INSERT INTO ADVOCACIA (IdDepar, Qnt_advogados) VALUES
-(2, 10);
+(2, 10),
+(1, 5);
 
 INSERT INTO FINANCEIRO (IdDepar, Receita) VALUES
 (1, 300.00),
-(2, 1000000.00);
+(2, 1000000.00),
+(1, 50000.00),
+(2, 200000.00);
 
 INSERT INTO DESPESA_FIN (IdDepar, Despesa) VALUES
 (1, 200.00),
-(2, 999999.00);
+(2, 999999.00),
+(1, 30000.00),
+(2, 150000.00);
 
 INSERT INTO CONSUTOR_EXTERNO (IdConsul, Nome, Especializacao, Email) VALUES
 (1, 'Berenice', 'Contabilidade', 'bere2020@hotmail.com'),
@@ -243,7 +283,9 @@ INSERT INTO CONSUTOR_EXTERNO (IdConsul, Nome, Especializacao, Email) VALUES
 
 
 INSERT INTO BIBLIOTECA_JURI (IdBib, QtdLivro, Id_trabalhador) VALUES
-(1, 1000, 1);
+(1, 1000, 1),
+(2, 2000, 2);
+
 
 INSERT INTO ORGREGULADOR (IdOrgReg, Nome, TipoRegulamento) VALUES
 (1, 'Orgão Regulador A', 'Regulamento A'),
@@ -254,50 +296,75 @@ INSERT INTO STAKEHOLDERS (Id_trabalhador, Qtd_investimento) VALUES
 (2, 1000.00),
 (3, 500.00),
 (4, 10000.00),
-(5, 50.00);
+(5, 50.00),
+(6, 7000.00),
+(7, 1500.00);
 
 INSERT INTO SETOR_BIB (IdBib, Setor) VALUES
-(1, 'Direito Civil');
+(1, 'Direito Civil'),
+(2, 'Direito Penal');
+
 
 INSERT INTO CASO (IdCaso, Descricao, IdOrgReg, IdCliente) VALUES
 (1, 'Caso de Fraude', 1, 1),
-(2, 'Caso de Desvio de Verba', 2, 2);
+(2, 'Caso de Desvio de Verba', 2, 2),
+(3, 'Caso de Corrupção', 1, 3),
+(4, 'Caso de Roubo', 2, 4);
 
 INSERT INTO SOCIO (Id_trabalhador, Participacao) VALUES
-(1, 50.00);
+(1, 50.00),
+(2, 30.00);
+
 
 INSERT INTO ADVOGADO (Id_trabalhador) VALUES
 (1),
 (2),
 (3),
 (4),
-(5);
+(5),
+(6),
+(7);
 
 INSERT INTO CHEFE (Id_trabalhador) VALUES
-(1);
+(1),
+(2);
 
 INSERT INTO AUDIENCIA (IdAudi, Data, IdOrgReg, IdCliente) VALUES
 (1, '2023-03-15', 1, 1),
-(2, '2023-04-20', 2, 2);
+(2, '2023-04-20', 2, 2),
+(3, '2023-05-15', 1, 3),
+(4, '2023-06-20', 2, 4);
 
 INSERT INTO PROCESSO (IdProc, Descricao, IdOrgReg, IdCliente) VALUES
 (1, 'Processo trabalhista', 1, 1),
 (2, 'Processo civil', 2, 2),
-(3, 'Processo penal', 2, 3);
+(3, 'Processo penal', 2, 3),
+(4, 'Processo ambiental', 1, 4),
+(5, 'Processo criminal', 2, 5);
 
 INSERT INTO ADV_PROCESSO (Id_trabalhador, IdProc) VALUES
 (1, 2),
 (2, 1),
-(3, 3);
+(3, 3),
+(4, 4),
+(5, 5);
 
 
 INSERT INTO ADV_CASO (Id_trabalhador, IdCaso) VALUES
 (1, 2),
-(2, 1);
+(2, 1),
+(3, 3),
+(4, 4);
 
 INSERT INTO ADV_AUDIENCIA (Id_trabalhador, IdAudi) VALUES
 (1, 2),
-(2, 1);
+(2, 1),
+(3, 3),
+(4, 4),
+(23, 1),
+(23, 2),
+(23, 3),
+(23, 4);
 
 -- Consultas
 -- 2.1.1. Lista de advogados, seus departamentos e os clientes que contrataram esses advogados
@@ -422,24 +489,23 @@ JOIN
 JOIN
     AUDIENCIA a ON aa.IdAudi = a.IdAudi;
 
--- 2.2.3 Encontrar trabalhadores que estejam em ambos os departamento de RH e TI. | RESULTADO ESTRANHO |
-SELECT
-    t.Id_trabalhador,
-    t.Nome
-FROM
-    TRABALHADOR t
-JOIN
-    DEPARTAMENTO d ON t.Id_trabalhador = d.NumTrab -- Associar trabalhadores aos departamentos
-JOIN
-    RH r ON d.IdDepar = r.IdDepar
-JOIN
-    TI i ON d.IdDepar = i.IdDepar
-GROUP BY
-    t.Id_trabalhador, t.Nome
-HAVING
-    COUNT(DISTINCT r.IdDepar) > 0
-    AND COUNT(DISTINCT i.IdDepar) > 0;
-
+-- 2.2.3 Encontrar trabalhadores que estejam em ambos os departamento de RH e TI.
+SELECT t.Id_trabalhador, t.Nome, t.Email
+FROM TRABALHADOR t
+WHERE EXISTS (
+    SELECT 1
+    FROM RH rh
+    WHERE rh.IdDepar = (
+        SELECT d.IdDepar
+        FROM DEPARTAMENTO d
+        WHERE d.IdDepar = rh.IdDepar
+        AND d.IdDepar = (
+            SELECT ti.IdDepar
+            FROM TI ti
+            WHERE ti.IdDepar = rh.IdDepar
+        )
+    )
+);
 
 -- 2.2.4 Encontrar advogados que estão ao mesmo tempo em um caso e em um processo
 SELECT
@@ -762,22 +828,15 @@ ON
 
     
 -- 2.4.1 Nosso objetivo é listar os trabalhadores que participaram de todas as audiências disponíveis na advocacia 		|ESTRANHO! Mas justificável, falta povoar|
-SELECT
-    t.Id_trabalhador,
-    t.Nome
-FROM
-    TRABALHADOR t
-JOIN
-    ADV_AUDIENCIA aa ON t.Id_trabalhador = aa.Id_trabalhador
-GROUP BY
-    t.Id_trabalhador, t.Nome
-HAVING
-    COUNT(DISTINCT aa.IdAudi) = (
-        SELECT
-            COUNT(DISTINCT IdAudi)
-        FROM
-            AUDIENCIA
-    );
+SELECT t.Id_trabalhador, t.Nome
+FROM (
+    SELECT Id_trabalhador, COUNT(IdAudi) AS Participacoes
+    FROM ADV_AUDIENCIA
+    GROUP BY Id_trabalhador
+) AS ParticipacoesPorTrabalhador
+JOIN TRABALHADOR t ON ParticipacoesPorTrabalhador.Id_trabalhador = t.Id_trabalhador
+WHERE Participacoes = (SELECT COUNT(*) FROM AUDIENCIA);
+
     
 -- 2.4.2. Nosso objetivo é encontrar contratos associados a todos os Departamentos da advocacia
 WITH DepartamentosAdvocacia AS (
