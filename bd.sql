@@ -366,6 +366,83 @@ INSERT INTO ADV_AUDIENCIA (Id_trabalhador, IdAudi) VALUES
 (23, 3),
 (23, 4);
 
+
+-- Triggers
+
+-- Este trigger atualiza o número de trabalhadores no departamento correspondente ao cliente, sempre que um novo trabalhador é inserido na tabela TRABALHADOR
+DELIMITER $$
+CREATE TRIGGER after_insert_trabalhador
+AFTER INSERT ON TRABALHADOR
+FOR EACH ROW
+BEGIN
+    UPDATE DEPARTAMENTO
+    SET NumTrab = NumTrab + 1
+    WHERE IdDepar = (SELECT IdDepar FROM CLIENTE WHERE Id_trabalhador = NEW.Id_trabalhador);
+END$$
+DELIMITER ;
+
+-- Este trigger impede a inserção de clientes com CPF duplicado na tabela CLIENTE.
+DELIMITER $$
+
+CREATE TRIGGER before_insert_cliente
+BEFORE INSERT ON CLIENTE
+FOR EACH ROW
+BEGIN
+    DECLARE count_cpf INT;
+    SELECT COUNT(*) INTO count_cpf
+    FROM CLIENTE
+    WHERE Cpf = NEW.Cpf;
+    
+    IF count_cpf > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'CPF already exists.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- Este trigger insere um registro na tabela AUDITORIA_CLIENTE sempre que um registro na tabela CLIENTE for atualizado.
+DELIMITER $$
+
+CREATE TRIGGER after_update_cliente
+AFTER UPDATE ON CLIENTE
+FOR EACH ROW
+BEGIN
+    INSERT INTO AUDITORIA_CLIENTE (IdCliente, Acao)
+    VALUES (NEW.IdCliente, 'Update');
+END$$
+
+DELIMITER ;
+
+-- Este trigger atualiza a receita do departamento correspondente, subtraindo a nova despesa, sempre que uma nova despesa é inserida na tabela DESPESA_FIN.
+DELIMITER $$
+
+CREATE TRIGGER after_insert_despesa
+AFTER INSERT ON DESPESA_FIN
+FOR EACH ROW
+BEGIN
+    UPDATE FINANCEIRO
+    SET Receita = Receita - NEW.Despesa
+    WHERE IdDepar = NEW.IdDepar;
+END$$
+
+DELIMITER ;
+
+-- Este trigger atualiza a quantidade de livros na biblioteca jurídica correspondente, sempre que um novo livro é inserido na tabela BIBLIOTECA_JURI.
+DELIMITER $$
+
+CREATE TRIGGER after_insert_livro
+AFTER INSERT ON BIBLIOTECA_JURI
+FOR EACH ROW
+BEGIN
+    UPDATE BIBLIOTECA_JURI
+    SET QtdLivro = QtdLivro + 1
+    WHERE IdBib = NEW.IdBib;
+END$$
+
+DELIMITER ;
+
+
 -- Consultas
 -- 2.1.1. Lista de advogados, seus departamentos e os clientes que contrataram esses advogados
 SELECT 
