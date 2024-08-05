@@ -3,6 +3,7 @@ DROP DATABASE IF EXISTS meu_banco_de_dados;
 CREATE DATABASE meu_banco_de_dados;
 USE meu_banco_de_dados;
 
+
 -- Create tables
 CREATE TABLE EQUIPE_APOIO_ADM (
     IdEquipe INT PRIMARY KEY,
@@ -182,6 +183,110 @@ CREATE TABLE ADV_CASO (
     FOREIGN KEY (IdCaso) REFERENCES CASO(IdCaso)
 );
 
+-- ################# TRIGGERS #################
+
+-- Este trigger impede a inserção de clientes com id duplicado na tabela CLIENTE.
+DELIMITER $$
+
+CREATE TRIGGER before_insert_cliente
+BEFORE INSERT ON CLIENTE
+FOR EACH ROW
+BEGIN
+    DECLARE count_cpf INT;
+    SELECT COUNT(*) INTO count_cpf
+    FROM CLIENTE
+    WHERE Cpf = NEW.Cpf;
+    
+    IF count_cpf > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Id duplicado.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- Esse Trigger impede que clientes tenham CPF repetidos
+DELIMITER $$
+
+CREATE TRIGGER before_update_cliente
+BEFORE UPDATE ON CLIENTE
+FOR EACH ROW
+BEGIN
+    DECLARE count_cpf INT;
+    SELECT COUNT(*) INTO count_cpf
+    FROM CLIENTE
+    WHERE Cpf = NEW.Cpf AND IdCliente != OLD.IdCliente;
+    
+    IF count_cpf > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'CPF duplicado.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- Esse Trigger Garante que cada departamento tenha um id único
+DELIMITER $$
+
+CREATE TRIGGER before_insert_departamento
+BEFORE INSERT ON DEPARTAMENTO
+FOR EACH ROW
+BEGIN
+    DECLARE count_id INT;
+    SELECT COUNT(*) INTO count_id
+    FROM DEPARTAMENTO
+    WHERE IdDepar = NEW.IdDepar;
+    
+    IF count_id > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'IdDepar duplicado.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- Esse Trigger garante que não tenham email duplicados
+DELIMITER $$
+
+CREATE TRIGGER before_insert_trabalhador
+BEFORE INSERT ON TRABALHADOR
+FOR EACH ROW
+BEGIN
+    DECLARE count_email INT;
+    SELECT COUNT(*) INTO count_email
+    FROM TRABALHADOR
+    WHERE Email = NEW.Email;
+    
+    IF count_email > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Email já existente.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- Esse Trigger Verifica se não tem nenhum id repedito
+DELIMITER $$
+
+CREATE TRIGGER before_update_cliente_id
+BEFORE UPDATE ON CLIENTE
+FOR EACH ROW
+BEGIN
+    DECLARE count_id INT;
+    SELECT COUNT(*) INTO count_id
+    FROM CLIENTE
+    WHERE IdCliente = NEW.IdCliente AND IdCliente != OLD.IdCliente;
+    
+    IF count_id > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'IdCliente already exists.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+
 -- Populate data
 INSERT INTO EQUIPE_APOIO_ADM (IdEquipe, Apoio) VALUES
 (1, 'Suporte Técnico'),
@@ -189,6 +294,7 @@ INSERT INTO EQUIPE_APOIO_ADM (IdEquipe, Apoio) VALUES
 
 INSERT INTO DEPARTAMENTO (IdDepar, NumTrab, IdEquipe) VALUES
 (1, 50, 1),
+-- (1, 100, 2),
 (2, 30, 2),
 (3, 25, 1),
 (4, 20, 2);
@@ -196,11 +302,13 @@ INSERT INTO DEPARTAMENTO (IdDepar, NumTrab, IdEquipe) VALUES
 
 INSERT INTO TRABALHADOR (Id_trabalhador, Nome, Email, IdConsul) VALUES
 (1, 'Daniel Rotrigesr', 'danielzimgamer@gmail.com', NULL),
+-- (1, 'sELMA', 'selma@gmail.com', NULL),
 (2, 'Francinvaldo de Sousa Barósio', 'naldo.ff.oliveira@outlook.com', NULL),
 (3, 'Luis de Deus', 'mojangmedêminecraftdegraca@gmail.com', NULL),
 (4, 'Rica de Cássia', 'ricesta123@gmail.com', NULL),
 (5, 'Hiago Robério', 'chorao_junior_sou_seu_fa@gmail.com', 1), -- Ele é 1, porque tem vínculo a um consultor externo
 (6, 'Gabriela Souza', 'gabriela@gmail.com', 2),
+-- (13, 'Gabriel Lima', 'gabriela@gmail.com', NULL),
 (7, 'Paulo Almeida', 'paulo@empresa.com', 3),
 (8, 'Fernanda Lima', 'fernanda@empresa.com', NULL),
 (9, 'Marcos Silva', 'marcos@empresa.com', NULL),
@@ -214,8 +322,10 @@ INSERT INTO TRABALHADOR (Id_trabalhador, Nome, Email, IdConsul) VALUES
 
 INSERT INTO CLIENTE (IdCliente, Nome, Cpf, Contrato, Id_trabalhador) VALUES
 (1, 'Salvando Sonegadores', '12345678901', 'Contrato123', 1),
+-- (1, 'Salvando Sonegadores', '12345678901', 'Contrato123', 1),
 (2, 'Somos Justus', '98765432101', 'Contrato456', 2),
 (3, 'Empresa legal -literalmente-', '40028922', 'Contrato789', 3),
+-- (9, 'Empresa chata -ironicamente-', '40028922', 'Contrato666', 3),
 (4, 'Desleais Juniors', '40048944', 'Contrato1011', 4),
 (5, 'Empresa X', '11122233344', 'Contrato555', 5),
 (6, 'Empresa Y', '55566677788', 'Contrato666', 6),
@@ -367,80 +477,10 @@ INSERT INTO ADV_AUDIENCIA (Id_trabalhador, IdAudi) VALUES
 (23, 4);
 
 
--- Triggers
 
--- Este trigger atualiza o número de trabalhadores no departamento correspondente ao cliente, sempre que um novo trabalhador é inserido na tabela TRABALHADOR
-DELIMITER $$
-CREATE TRIGGER after_insert_trabalhador
-AFTER INSERT ON TRABALHADOR
-FOR EACH ROW
-BEGIN
-    UPDATE DEPARTAMENTO
-    SET NumTrab = NumTrab + 1
-    WHERE IdDepar = (SELECT IdDepar FROM CLIENTE WHERE Id_trabalhador = NEW.Id_trabalhador);
-END$$
-DELIMITER ;
+-- ################################# AREA DE TESTE TRIGGERS ################################
 
--- Este trigger impede a inserção de clientes com CPF duplicado na tabela CLIENTE.
-DELIMITER $$
-
-CREATE TRIGGER before_insert_cliente
-BEFORE INSERT ON CLIENTE
-FOR EACH ROW
-BEGIN
-    DECLARE count_cpf INT;
-    SELECT COUNT(*) INTO count_cpf
-    FROM CLIENTE
-    WHERE Cpf = NEW.Cpf;
-    
-    IF count_cpf > 0 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'CPF already exists.';
-    END IF;
-END$$
-
-DELIMITER ;
-
--- Este trigger insere um registro na tabela AUDITORIA_CLIENTE sempre que um registro na tabela CLIENTE for atualizado.
-DELIMITER $$
-
-CREATE TRIGGER after_update_cliente
-AFTER UPDATE ON CLIENTE
-FOR EACH ROW
-BEGIN
-    INSERT INTO AUDITORIA_CLIENTE (IdCliente, Acao)
-    VALUES (NEW.IdCliente, 'Update');
-END$$
-
-DELIMITER ;
-
--- Este trigger atualiza a receita do departamento correspondente, subtraindo a nova despesa, sempre que uma nova despesa é inserida na tabela DESPESA_FIN.
-DELIMITER $$
-
-CREATE TRIGGER after_insert_despesa
-AFTER INSERT ON DESPESA_FIN
-FOR EACH ROW
-BEGIN
-    UPDATE FINANCEIRO
-    SET Receita = Receita - NEW.Despesa
-    WHERE IdDepar = NEW.IdDepar;
-END$$
-
-DELIMITER ;
-
--- Este trigger atualiza a quantidade de livros na biblioteca jurídica correspondente, sempre que um novo livro é inserido na tabela BIBLIOTECA_JURI.
-DELIMITER $$
-
-CREATE TRIGGER after_insert_livro
-AFTER INSERT ON BIBLIOTECA_JURI
-FOR EACH ROW
-BEGIN
-    UPDATE BIBLIOTECA_JURI
-    SET QtdLivro = QtdLivro + 1
-    WHERE IdBib = NEW.IdBib;
-END$$
-
-DELIMITER ;
+-- ################################# AREA DE TESTE TRIGGERS ################################
 
 
 -- Consultas
