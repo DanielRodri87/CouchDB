@@ -192,12 +192,12 @@ CREATE TRIGGER before_insert_cliente
 BEFORE INSERT ON CLIENTE
 FOR EACH ROW
 BEGIN
-    DECLARE count_cpf INT;
-    SELECT COUNT(*) INTO count_cpf
+    DECLARE count_id INT;
+    SELECT COUNT(*) INTO count_id
     FROM CLIENTE
-    WHERE Cpf = NEW.Cpf;
+    WHERE IdCliente = NEW.IdCliente;
     
-    IF count_cpf > 0 THEN
+    IF count_id > 0 THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Id duplicado.';
     END IF;
@@ -475,12 +475,6 @@ INSERT INTO ADV_AUDIENCIA (Id_trabalhador, IdAudi) VALUES
 (23, 2),
 (23, 3),
 (23, 4);
-
-
-
--- ################################# AREA DE TESTE TRIGGERS ################################
-
--- ################################# AREA DE TESTE TRIGGERS ################################
 
 
 -- Consultas
@@ -1084,3 +1078,4 @@ FROM
     MaxAudiencias ma
 JOIN
     MaxAudienciaCount mac ON ma.NumeroDeAudiencias = mac.MaxAudiencias;
+
