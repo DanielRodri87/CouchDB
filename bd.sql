@@ -199,7 +199,7 @@ BEGIN
     
     IF count_id > 0 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Id duplicado.';
+        SET MESSAGE_TEXT = 'É sugerido que troque o id. Visto que chaves primárias não podem conter elementos repetidos.';
     END IF;
 END$$
 
@@ -219,7 +219,7 @@ BEGIN
     
     IF count_cpf > 0 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'CPF duplicado.';
+        SET MESSAGE_TEXT = 'CPF devem ser valores únicos, há um cliente com CPF repetido, e isso não pode ocorrer.';
     END IF;
 END$$
 
@@ -239,7 +239,7 @@ BEGIN
     
     IF count_id > 0 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'IdDepar duplicado.';
+        SET MESSAGE_TEXT = 'Os departamentos são identificados pelo ID, e como tem elementos repetidos não podem ser cadastrados.';
     END IF;
 END$$
 
@@ -259,7 +259,7 @@ BEGIN
     
     IF count_email > 0 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Email já existente.';
+        SET MESSAGE_TEXT = 'Email já está em uso, verifique o cadastros anteriores no Banco de dados.';
     END IF;
 END$$
 
